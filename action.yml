@@ -1,11 +1,10 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Install minepkg CLI'
+description: 'Installs the minepkg CLI, so you can use it for custom builds'
+author: 'minepkg'
 inputs:
-  milliseconds: # change this
-    required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  version:
+    description: 'The CLI version to install'
+    default: 'latest'
 runs:
   using: 'node12'
   main: 'dist/index.js'
