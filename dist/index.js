@@ -44,10 +44,34 @@ const path_1 = __nccwpck_require__(622);
 const tool_cache_1 = __nccwpck_require__(784);
 // TODO: replace with minepkg CDN url
 const DOWNLOAD_BASE = 'https://storage.googleapis.com/minepkg-client';
-const install = ({ os, arch, version }) => __awaiter(void 0, void 0, void 0, function* () {
-    const ext = os === 'windows' ? '.exe' : '';
-    const downloadUrl = `${DOWNLOAD_BASE}/${version}/minepkg-${os}-${arch}${ext}`;
-    core.info(`Installing minepkg "${version}" on ${os}`);
+const OS_MAP = new Map([
+    ['win32', 'windows'],
+    ['darwin', 'macos'],
+    ['linux', 'linux']
+]);
+const ARCH_MAP = new Map([['x64', 'amd64']]);
+const install = ({ platform = process.platform, arch = process.arch, version = 'latest' }) => __awaiter(void 0, void 0, void 0, function* () {
+    const mappedOS = OS_MAP.get(platform);
+    const mappedArch = ARCH_MAP.get(process.arch);
+    if (mappedOS === undefined) {
+        core.setFailed([
+            `Unsupported operating system "${platform}". We currently only support linux, macos and windows.`,
+            'Open an issue if you want us to support this os:',
+            '  https://github.com/minepkg/minepkg/issues/new?assignees=&labels=&template=feature_request.md'
+        ].join('\n'));
+        return;
+    }
+    if (mappedArch !== 'amd64') {
+        core.setFailed([
+            `Unsupported architecture "${arch}". We currently only support x64.`,
+            'Open an issue if you want us to support this arch:',
+            '  https://github.com/minepkg/minepkg/issues/new?assignees=&labels=&template=feature_request.md'
+        ].join('\n'));
+        return;
+    }
+    const ext = mappedOS === 'windows' ? '.exe' : '';
+    const downloadUrl = `${DOWNLOAD_BASE}/${version}/minepkg-${mappedOS}-${mappedArch}${ext}`;
+    core.info(`Installing minepkg "${version}" on ${mappedOS}`);
     core.info(`Downloading ${downloadUrl}`);
     const destinationDir = path_1.join(os_1.homedir(), '.minepkg-bin');
     const dlPath = yield tool_cache_1.downloadTool(downloadUrl);
@@ -101,35 +125,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
 const install_1 = __importDefault(__nccwpck_require__(39));
-const OS_MAP = new Map([
-    ['win32', 'windows'],
-    ['darwin', 'macos'],
-    ['linux', 'linux']
-]);
-const ARCH_MAP = new Map([['x64', 'amd64']]);
 // note: debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         const version = core.getInput('version') || 'latest';
-        const os = OS_MAP.get(process.platform);
-        const arch = ARCH_MAP.get(process.arch);
-        if (os === undefined) {
-            core.setFailed([
-                `Unsupported operating system "${os}". We currently only support linux, macos and windows.`,
-                'Open an issue if you want us to support this os:',
-                '  https://github.com/minepkg/minepkg/issues/new?assignees=&labels=&template=feature_request.md'
-            ].join('\n'));
-            return;
-        }
-        if (arch !== 'amd64') {
-            core.setFailed([
-                `Unsupported architecture "${arch}". We currently only support x64.`,
-                'Open an issue if you want us to support this arch:',
-                '  https://github.com/minepkg/minepkg/issues/new?assignees=&labels=&template=feature_request.md'
-            ].join('\n'));
-            return;
-        }
-        return install_1.default({ os, arch, version });
+        return install_1.default({ version });
     });
 }
 // eslint-disable-next-line github/no-then
