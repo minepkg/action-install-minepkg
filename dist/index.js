@@ -2,7 +2,7 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 109:
+/***/ 39:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -44,6 +44,63 @@ const path_1 = __nccwpck_require__(622);
 const tool_cache_1 = __nccwpck_require__(784);
 // TODO: replace with minepkg CDN url
 const DOWNLOAD_BASE = 'https://storage.googleapis.com/minepkg-client';
+const install = ({ os, arch, version }) => __awaiter(void 0, void 0, void 0, function* () {
+    const ext = os === 'windows' ? '.exe' : '';
+    const downloadUrl = `${DOWNLOAD_BASE}/${version}/minepkg-${os}-${arch}${ext}`;
+    core.info(`Installing minepkg "${version}" on ${os}`);
+    core.info(`Downloading ${downloadUrl}`);
+    const destinationDir = path_1.join(os_1.homedir(), '.minepkg-bin');
+    const dlPath = yield tool_cache_1.downloadTool(downloadUrl);
+    const binPath = path_1.join(destinationDir, `minepkg${ext}`);
+    yield io_1.mv(dlPath, path_1.join(destinationDir, `minepkg${ext}`));
+    fs.chmodSync(binPath, 755);
+    core.addPath(destinationDir);
+    core.info('✅ minepkg cli has been installed');
+});
+exports.default = install;
+
+
+/***/ }),
+
+/***/ 109:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(186));
+const install_1 = __importDefault(__nccwpck_require__(39));
 const OS_MAP = new Map([
     ['win32', 'windows'],
     ['darwin', 'macos'],
@@ -56,7 +113,6 @@ function run() {
         const version = core.getInput('version') || 'latest';
         const os = OS_MAP.get(process.platform);
         const arch = ARCH_MAP.get(process.arch);
-        const ext = os === 'windows' ? '.exe' : '';
         if (os === undefined) {
             core.setFailed([
                 `Unsupported operating system "${os}". We currently only support linux, macos and windows.`,
@@ -73,16 +129,7 @@ function run() {
             ].join('\n'));
             return;
         }
-        core.info(`Installing minepkg "${version}" on ${os}`);
-        const downloadUrl = `${DOWNLOAD_BASE}/${version}/minepkg-${os}-${arch}${ext}`;
-        core.info(`Downloading ${downloadUrl}`);
-        const destinationDir = path_1.join(os_1.homedir(), '.minepkg-bin');
-        const dlPath = yield tool_cache_1.downloadTool(downloadUrl);
-        const binPath = path_1.join(destinationDir, `minepkg${ext}`);
-        yield io_1.mv(dlPath, path_1.join(destinationDir, `minepkg${ext}`));
-        fs.chmodSync(binPath, 755);
-        core.addPath(destinationDir);
-        core.info('✅ minepkg cli has been installed');
+        return install_1.default({ os, arch, version });
     });
 }
 // eslint-disable-next-line github/no-then
