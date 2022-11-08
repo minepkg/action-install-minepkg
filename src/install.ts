@@ -6,15 +6,19 @@ import { join } from 'path';
 import { downloadTool } from '@actions/tool-cache';
 
 // TODO: replace with minepkg CDN url
-const DOWNLOAD_BASE = 'https://storage.googleapis.com/minepkg-client';
+const DOWNLOAD_BASE = 'https://get.minepkg.io';
 
 const OS_MAP = new Map([
   ['win32', 'windows'],
-  ['darwin', 'macos'],
+  ['darwin', 'darwin'],
   ['linux', 'linux']
 ]);
 
-const ARCH_MAP = new Map([['x64', 'amd64']]);
+const ARCH_MAP = new Map([
+  ['x64', 'amd64'],
+  ['x86_64', 'amd64'],
+  ['aarch64', 'arm64']
+]);
 
 interface installArgs {
   platform?: string;
@@ -41,10 +45,10 @@ const install = async ({
     return;
   }
 
-  if (mappedArch !== 'amd64') {
+  if (mappedArch !== 'amd64' && mappedArch !== 'arm64') {
     core.setFailed(
       [
-        `Unsupported architecture "${arch}". We currently only support x64.`,
+        `Unsupported architecture "${arch}". We currently only support x64 and arm64.`,
         'Open an issue if you want us to support this arch:',
         '  https://github.com/minepkg/minepkg/issues/new?assignees=&labels=&template=feature_request.md'
       ].join('\n')
@@ -53,7 +57,7 @@ const install = async ({
   }
 
   const ext = mappedOS === 'windows' ? '.exe' : '';
-  const downloadUrl = `${DOWNLOAD_BASE}/${version}/minepkg-${mappedOS}-${mappedArch}${ext}`;
+  const downloadUrl = `${DOWNLOAD_BASE}/download?os=${mappedOS}&arch=${mappedArch}`;
 
   core.info(`Installing minepkg "${version}" on ${mappedOS}`);
   core.info(`Downloading ${downloadUrl}`);
